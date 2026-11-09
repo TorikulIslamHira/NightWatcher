@@ -1,79 +1,127 @@
-# 👁️ NightWatcher - Linux Intrusion Detection System (IDS)
+<div align="center">
 
-![Platform](https://img.shields.io/badge/Platform-Linux-linux?style=flat-square)
-![Language](https://img.shields.io/badge/Language-Bash-4EAA25?style=flat-square)
-![Security](https://img.shields.io/badge/Security-IDS-red?style=flat-square)
-![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
+# 👁️ NightWatcher
 
-**NightWatcher** is an advanced, automated security suite designed for Linux servers. It acts as a digital sentry, monitoring system logs in real-time to detect unauthorized access attempts (SSH Brute Force), tracking the attacker's physical location using Geo-IP technology, and dispatching instant rich-embed alerts to **Discord**.
+**A digital sentry for Linux servers: detects SSH attacks, traces the attacker and alerts you on Discord.**
 
----
+![Bash](https://img.shields.io/badge/Bash-4EAA25?logo=gnubash&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black) ![Discord](https://img.shields.io/badge/Discord-Webhooks-5865F2?logo=discord&logoColor=white) ![License](https://img.shields.io/badge/License-MIT-blue)
 
-## 🚀 Key Features
+</div>
 
-* **⚡ Real-time Monitoring:** Continuously watches `auth.log` or Systemd Journal for suspicious activities.
-* **🌍 Geo-IP Tracking:** Automatically traces the attacker's Country, City, ISP, and Map Coordinates.
-* **🔔 Instant Alerts:** Sends professional, color-coded security notifications to Discord Webhooks.
-* **🧠 Automated Response:** Triggers tracking protocols immediately upon detecting a failed login attempt.
+NightWatcher is an automated Intrusion Detection System (IDS) for Linux. It watches your system logs in real time, spots unauthorized access attempts such as SSH brute force, looks up where the attacker is connecting from, and sends a colour-coded rich-embed alert to your Discord channel within seconds.
 
----
+## 📌 Table of Contents
 
-## 📂 Module Architecture
+[🎯 What it does](#-what-it-does) · [🧠 Architecture](#-architecture--at-a-glance) · [🛠️ Tech stack](#️-tech-stack) · [🚀 Getting started](#-getting-started) · [🏃 Usage](#-usage) · [📸 Alert preview](#-alert-preview) · [🗂️ Project status](#️-project-status) · [🧭 Design principles](#-design-principles)
 
-| Module Name | Function |
-| :--- | :--- |
-| **`sentry.sh`** | **The Monitor:** Runs in the background, parses logs (`auth.log`), and detects intrusion patterns using Regex. |
-| **`watchman_core.sh`** | **The Brain:** Receives IP data from Sentry, queries the `ip-api`, and constructs the intelligence report. |
-| **`messenger.sh`** | **The Alert System:** Formats the intelligence data into a JSON Payload and sends a Rich-Embed message to Discord. |
-| **`tracker.sh`** | **Manual Tool:** A standalone utility to manually track any IP address directly from the terminal. |
+## 🎯 What it does
 
----
+| Capability | Description |
+|---|---|
+| ⚡ Real-time monitoring | Continuously watches `auth.log` or the systemd journal for suspicious activity |
+| 🌍 Geo-IP tracking | Traces the attacker's country, city, ISP and map coordinates |
+| 🔔 Instant alerts | Sends professional, colour-coded notifications to a Discord webhook |
+| 🧠 Automated response | Starts the tracking routine the moment a failed login is detected |
+| 🔎 Manual lookup | A standalone tool to investigate any IP address from the terminal |
 
-## 🛠️ Prerequisites
+## 🧠 Architecture: at a glance
 
-NightWatcher relies on **JSON processing** and **API requests**. Please install the following dependencies:
+```
+auth.log / journal  ->  sentry.sh  ->  watchman_core.sh  ->  messenger.sh  ->  Discord
+                        (detect)       (Geo-IP lookup)       (format + send)
+```
+
+| Module | Role |
+|---|---|
+| `sentry.sh` | **The monitor.** Runs in the background, parses `auth.log` and detects intrusion patterns with regex |
+| `watchman_core.sh` | **The brain.** Receives IP data from Sentry, queries ip-api and builds the intelligence report |
+| `messenger.sh` | **The alert system.** Formats the report as a JSON payload and posts a rich embed to Discord |
+| `tracker.sh` | **Manual tool.** Standalone utility to track any IP address from the terminal |
+
+## 🛠️ Tech stack
+
+| Layer | Technology |
+|---|---|
+| Language | Bash |
+| Parsing | Regex on `auth.log` / systemd journal |
+| Data | ip-api (Geo-IP lookup) |
+| JSON and HTTP | `jq` and `curl` |
+| Alerts | Discord webhooks (rich embeds) |
+
+## 🚀 Getting started
+
+Install the dependencies:
 
 ```bash
 sudo apt update && sudo apt install jq curl -y
+```
 
-⚙️ Configuration
-Before running the system, you must configure your notification channel.
+Clone the repository:
 
-Open watchman_core.sh (and messenger.sh if used separately).
-
-Find the variable WEBHOOK_URL.
-
-Replace the placeholder with your Discord Webhook URL.
-
-Bash
-# Example inside the script:
-WEBHOOK_URL="[https://discord.com/api/webhooks/YOUR_UNIQUE_ID](https://discord.com/api/webhooks/YOUR_UNIQUE_ID)"
-🏃‍♂️ Usage Guide
-1. Start the Automated Sentry (IDS)
-To enable real-time protection, run the Sentry script with root privileges:
-
-Bash
+```bash
+git clone https://github.com/TorikulIslamHira/NightWatcher.git
+cd NightWatcher
 chmod +x *.sh
+```
+
+Configure your notification channel. Open `watchman_core.sh` (and `messenger.sh` if you use it separately), find the `WEBHOOK_URL` variable and replace the placeholder with your Discord webhook:
+
+```bash
+WEBHOOK_URL="https://discord.com/api/webhooks/YOUR_UNIQUE_ID"
+```
+
+## 🏃 Usage
+
+**1. Start the automated sentry (IDS).** Run it with root privileges for real-time protection:
+
+```bash
 sudo ./sentry.sh
+```
+
 The system is now live and waiting for attacks.
 
-2. Manual IP Tracking
-To investigate a specific suspicious IP address manually:
+**2. Track an IP manually.** To investigate a suspicious address:
 
-Bash
+```bash
 ./tracker.sh
-📸 Alert Preview
-NightWatcher sends alerts in the following format:
+```
 
-🕵️‍♂️ INTRUDER LOCATED
+## 📸 Alert preview
 
-Target IP: 192.168.x.x
+NightWatcher sends alerts in this format:
 
-Location: Moscow, Russia
+```
+🕵️ INTRUDER LOCATED
 
-ISP: Example Telecom
+Target IP : 192.168.x.x
+Location  : Moscow, Russia
+ISP       : Example Telecom
+Time      : 2026-01-25 14:00:00
+```
 
-Time: 2026-01-25 14:00:00
+## 🗂️ Project status
 
-👨‍💻 Author
-Developed by Torikul Islam Hira Passionate about DevOps, Linux Automation, and Cyber Security.
+| Item | Status |
+|---|---|
+| SSH brute-force detection | ✅ Done |
+| Geo-IP tracking | ✅ Done |
+| Discord rich-embed alerts | ✅ Done |
+| Manual IP tracker | ✅ Done |
+| Auto-block attackers (firewall) | ⏳ Planned |
+| Telegram alerts | ⏳ Planned |
+
+## 🧭 Design principles
+
+| Principle | Meaning |
+|---|---|
+| Lightweight | Pure Bash with two small dependencies, runs on any Linux server |
+| Fast feedback | An alert reaches you within seconds of the attack |
+| Modular | Detect, enrich and notify live in separate scripts that can be reused alone |
+
+## 👨‍💻 Author
+
+Built by **Torikul Islam Hira**, passionate about DevOps, Linux automation and cyber security. See also [hellbox-sentinel](https://github.com/TorikulIslamHira/hellbox-sentinel), a Linux server health monitor with self-healing.
+
+## 📄 License
+
+Released under the [MIT License](LICENSE).
